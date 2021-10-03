@@ -107,6 +107,7 @@ impl MexNoDel {
 #[cfg(test)]
 mod tests {
     use crate::Mex;
+    #[test]
     fn test_mex() {
         let mut mex = Mex::new();
         mex.add(2);
@@ -126,6 +127,7 @@ mod tests {
     }
 
     use crate::MexN;
+    #[test]
     fn test_mex_n() {
         let mut mex = MexN::new(7);
         mex.add(2);
@@ -145,6 +147,7 @@ mod tests {
     }
 
     use crate::MexNoDel;
+    #[test]
     fn test_mex_no_del() {
         let mut mex = MexNoDel::new(7);
         mex.add(1);
