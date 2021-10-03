@@ -1,16 +1,17 @@
+#![allow(dead_code)]
 use std::collections::{BTreeSet, HashMap};
 
 type M = u128;
 
 // Mex when number of queries is unknown
-pub struct Mex {
+struct Mex {
     map: HashMap<M, usize>,
     complement: BTreeSet<M>, // because HashSet is unsorted
     processed: usize,
 }
 
 impl Mex {
-    pub fn new() -> Self {
+    fn new() -> Self {
         let mut complement = BTreeSet::new();
         complement.insert(0);
         Self {
@@ -19,7 +20,7 @@ impl Mex {
             processed: 0,
         }
     }
-    pub fn add(&mut self, element: M) {
+    fn add(&mut self, element: M) {
         self.map.entry(element).and_modify(|e| *e += 1).or_insert(1);
         self.complement.remove(&element);
 
@@ -28,7 +29,7 @@ impl Mex {
             self.complement.insert(self.processed as M);
         }
     }
-    pub fn remove(&mut self, element: M) {
+    fn remove(&mut self, element: M) {
         if let Some(val) = self.map.get_mut(&element) {
             *val -= 1;
             if *val == 0 {
@@ -42,19 +43,19 @@ impl Mex {
             self.complement.insert(self.processed as M);
         }
     }
-    pub fn mex(&self) -> M {
+    fn mex(&self) -> M {
         *self.complement.iter().next().unwrap()
     }
 }
 
 // Mex when number of queries is known
-pub struct MexN {
+struct MexN {
     map: HashMap<M, usize>,
     complement: BTreeSet<M>,
 }
 
 impl MexN {
-    pub fn new(n_queries: usize) -> Self {
+    fn new(n_queries: usize) -> Self {
         let mut complement: BTreeSet<M> = BTreeSet::new();
         for i in 0..n_queries as M {
             complement.insert(i);
@@ -64,11 +65,11 @@ impl MexN {
             complement,
         }
     }
-    pub fn add(&mut self, element: M) {
+    fn add(&mut self, element: M) {
         self.map.entry(element).and_modify(|e| *e += 1).or_insert(1);
         self.complement.remove(&element);
     }
-    pub fn remove(&mut self, element: M) {
+    fn remove(&mut self, element: M) {
         if let Some(val) = self.map.get_mut(&element) {
             *val -= 1;
             if *val == 0 {
@@ -77,23 +78,23 @@ impl MexN {
             }
         }
     }
-    pub fn mex(&self) -> M {
+    fn mex(&self) -> M {
         *self.complement.iter().next().unwrap()
     }
 }
 
 // Mex if there are no delete operations
-pub struct MexNoDel {
+struct MexNoDel {
     vec: Vec<M>,
     mex: M,
 }
 
 impl MexNoDel {
-    pub fn new(n: usize) -> Self {
+    fn new(n: usize) -> Self {
         let vec: Vec<M> = vec![0; n + 1];
         Self { vec, mex: 0 }
     }
-    pub fn add(&mut self, element: M) {
+    fn add(&mut self, element: M) {
         self.vec[element as usize] = 1;
         if element == self.mex {
             while self.vec[self.mex as usize] == 1 {
