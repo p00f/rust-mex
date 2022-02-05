@@ -1,35 +1,37 @@
-#![allow(dead_code)]
-use std::collections::{BTreeSet, HashMap};
+use std::{
+    collections::{BTreeSet, HashMap},
+    ops::AddAssign,
+};
 
-type M = u128;
+// type M = u128;
 
 // Mex when number of queries is unknown
-struct Mex {
+pub struct Mex<M> {
     map: HashMap<M, usize>,
     complement: BTreeSet<M>, // because HashSet is unsorted
     processed: usize,
 }
 
-impl Mex {
-    fn new() -> Self {
+impl<M: Ord + From<usize> + std::hash::Hash + Copy> Mex<M> {
+    pub fn new() -> Self {
         let mut complement = BTreeSet::new();
-        complement.insert(0);
+        complement.insert(0.into());
         Self {
             map: HashMap::new(),
             complement,
             processed: 0,
         }
     }
-    fn add(&mut self, element: M) {
+    pub fn add(&mut self, element: M) {
         self.map.entry(element).and_modify(|e| *e += 1).or_insert(1);
         self.complement.remove(&element);
 
         self.processed += 1;
-        if self.map.get(&(self.processed as M)).is_none() {
-            self.complement.insert(self.processed as M);
+        if self.map.get(&(M::from(self.processed))).is_none() {
+            self.complement.insert(M::from(self.processed));
         }
     }
-    fn remove(&mut self, element: M) {
+    pub fn remove(&mut self, element: M) {
         if let Some(val) = self.map.get_mut(&element) {
             *val -= 1;
             if *val == 0 {
@@ -39,37 +41,37 @@ impl Mex {
         }
 
         self.processed += 1;
-        if self.map.get(&(self.processed as M)).is_none() {
-            self.complement.insert(self.processed as M);
+        if self.map.get(&(M::from(self.processed))).is_none() {
+            self.complement.insert(M::from(self.processed));
         }
     }
-    fn mex(&self) -> M {
+    pub fn mex(&self) -> M {
         *self.complement.iter().next().unwrap()
     }
 }
 
 // Mex when number of queries is known
-struct MexN {
+pub struct MexN<M> {
     map: HashMap<M, usize>,
     complement: BTreeSet<M>,
 }
 
-impl MexN {
-    fn new(n_queries: usize) -> Self {
+impl<M: Ord + std::hash::Hash + Copy + From<usize>> MexN<M> {
+    pub fn new(n_queries: usize) -> Self {
         let mut complement: BTreeSet<M> = BTreeSet::new();
-        for i in 0..n_queries as M {
-            complement.insert(i);
+        for i in 0..n_queries {
+            complement.insert(M::from(i));
         }
         Self {
             map: HashMap::new(),
             complement,
         }
     }
-    fn add(&mut self, element: M) {
+    pub fn add(&mut self, element: M) {
         self.map.entry(element).and_modify(|e| *e += 1).or_insert(1);
         self.complement.remove(&element);
     }
-    fn remove(&mut self, element: M) {
+    pub fn remove(&mut self, element: M) {
         if let Some(val) = self.map.get_mut(&element) {
             *val -= 1;
             if *val == 0 {
@@ -78,27 +80,31 @@ impl MexN {
             }
         }
     }
-    fn mex(&self) -> M {
+    pub fn mex(&self) -> M {
         *self.complement.iter().next().unwrap()
     }
 }
 
 // Mex if there are no delete operations
-struct MexNoDel {
+pub struct MexNoDel<M> {
     vec: Vec<M>,
     mex: M,
 }
 
-impl MexNoDel {
-    fn new(n: usize) -> Self {
-        let vec: Vec<M> = vec![0; n + 1];
-        Self { vec, mex: 0 }
+impl<M: Clone + From<usize> + AddAssign + Eq + Into<usize> + Copy> MexNoDel<M> {
+    pub fn new(n: usize) -> Self {
+        let vec: Vec<M> = vec![M::from(0); n + 1];
+        Self {
+            vec,
+            mex: M::from(0),
+        }
     }
-    fn add(&mut self, element: M) {
-        self.vec[element as usize] = 1;
-        if element == self.mex {
-            while self.vec[self.mex as usize] == 1 {
-                self.mex += 1;
+    pub fn add(&mut self, element: M) {
+        let element: usize = element.into();
+        self.vec[element] = M::from(1);
+        if element == self.mex.into() {
+            while self.vec[self.mex.into()] == M::from(1) {
+                self.mex += M::from(1);
             }
         }
     }
